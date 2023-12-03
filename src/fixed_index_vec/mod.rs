@@ -230,33 +230,51 @@ impl<Value> FixedIndexVec<Value> {
         self.values[index].as_opt_mut()
     }
 
-    /// Iterator over all stored value (This excludes empty and reserved positions).
+    /// Iterator referencing all stored value (This excludes empty and reserved positions).
     pub fn iter(&self) -> impl Iterator<Item=&Value> {
         self.values.iter()
             .filter(|pos| pos.is_used())
-            .map(|pos| match pos {
-                Used(value) => value,
-                _ => panic!()
-            })
+            .map(|pos| pos.as_opt_ref().unwrap())
     }
 
-    /// Mutable iterator over all stored value (This excludes empty and reserved positions).
+    /// Iterator referencing all stored value (This excludes empty and reserved positions) and their
+    /// indexes.
+    pub fn iter_index(&self) -> impl Iterator<Item=(usize, &Value)> {
+        self.values.iter()
+            .enumerate()
+            .filter(|(_, pos)| pos.is_used())
+            .map(|(index, pos)| (index, pos.as_opt_ref().unwrap()))
+    }
+
+    /// Mutable iterator over all stored value (This excludes empty and reserved positions) and
+    /// their indexes.
     pub fn iter_mut(&mut self) -> impl Iterator<Item=&mut Value> {
         self.values.iter_mut()
             .filter(|pos| pos.is_used())
-            .map(|pos| match pos {
-                Used(value) => value,
-                _ => panic!()
-            })
+            .map(|pos| pos.as_opt_mut().unwrap())
+    }
+
+    /// Mutable iterator over all stored value (This excludes empty and reserved positions).
+    pub fn iter_index_mut(&mut self) -> impl Iterator<Item=(usize, &mut Value)> {
+        self.values.iter_mut()
+            .enumerate()
+            .filter(|(_, pos)| pos.is_used())
+            .map(|(index, pos)| (index, pos.as_opt_mut().unwrap()))
     }
 
     /// In-Place iterator over all stored value (This excludes empty and reserved positions).
     pub fn into_iter(self) -> impl Iterator<Item=Value> {
         self.values.into_iter()
             .filter(|pos| pos.is_used())
-            .map(|pos| match pos {
-                Used(value) => value,
-                _ => panic!()
-            })
+            .map(|pos| pos.opt().unwrap())
+    }
+
+    /// In-Place iterator over all stored value (This excludes empty and reserved positions) and
+    /// their indexes..
+    pub fn into_iter_index(self) -> impl Iterator<Item=(usize, Value)> {
+        self.values.into_iter()
+            .enumerate()
+            .filter(|(_, pos)| pos.is_used())
+            .map(|(index, pos)| (index, pos.opt().unwrap()))
     }
 }
